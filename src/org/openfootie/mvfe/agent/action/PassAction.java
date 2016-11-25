@@ -4,7 +4,7 @@ import org.openfootie.mvfe.space.PitchPosition;
 
 public class PassAction extends Action {
 	
-	private PitchPosition target;
+	protected PitchPosition target;
 
 	public PassAction(PitchPosition target) {
 		super();
