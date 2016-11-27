@@ -3,17 +3,21 @@ package org.openfootie.mvfe.probability;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class ActionModel {
+import org.openfootie.mvfe.agent.action.Action;
 
-	protected final double probability;
+public class ActionModel {
+
+	private final double probability;
+	private final Action action;
+	
 	private Set<OutcomeModel> outcomes = new HashSet<OutcomeModel>();
 	
-	public ActionModel(double probability) {
+	public ActionModel(Action action, double probability) {
+		this.action = action;
 		this.probability = probability;
 	}
 	
 	public void addOutcome(OutcomeModel outcomeModel) {
 		outcomes.add(outcomeModel);
 	}
-	
 }

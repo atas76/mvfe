@@ -2,9 +2,11 @@ package org.openfootie.mvfe.agent.action;
 
 import org.openfootie.mvfe.space.PitchPosition;
 
-public class LongPassAction extends PassAction {
+public class KickBallAction extends PassAction {
 
-	public LongPassAction(PitchPosition target) {
+	public KickBallAction(PitchPosition target) {
 		super(target);
 	}
+	
+	
 }
