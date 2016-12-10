@@ -299,6 +299,8 @@ public class ProbabilityModel {
 				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 1.0);
 				interception.setCause(OutcomeCause.HEADER);
 				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(MC_PITCH_POSITION, 1.0, true));
+				
+				actionModels[8].addOutcome(interception);
 			}
 			
 			actionModels[9] = new ActionModel(new DribbleAction(), 0.02);
@@ -307,6 +309,36 @@ public class ProbabilityModel {
 			}
 			
 			actionModels[10] = new ActionModel(new FoulAction(), 0.04);
+					
+			// Add pitch position paths to probability model tree
+			aggregatePitchPositionPaths(pitchPosition, actionModels);
+		}
+		
+		// DT action models
+		{
+			final int AM_CARDINALITY = 2;
+			PitchPosition pitchPosition = DT_PITCH_POSITION;
+					
+			ActionModel [] actionModels = new ActionModel[AM_CARDINALITY];
+					
+			// Define action models (the actual work)
+			actionModels[0] = new ActionModel(new PassAction(DW_PITCH_POSITION), 0.5);
+			{
+				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 1.0);
+				interception.setCause(OutcomeCause.HEADER);
+				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(DW_PITCH_POSITION, 1.0, false));
+				
+				actionModels[0].addOutcome(interception);
+			}
+			
+			actionModels[1] = new ActionModel(new PassAction(MC_PITCH_POSITION), 0.5);
+			{
+				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 1.0);
+				interception.setCause(OutcomeCause.HEADER);
+				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(MW_PITCH_POSITION, 1.0, true));
+				
+				actionModels[1].addOutcome(interception);
+			}
 					
 			// Add pitch position paths to probability model tree
 			aggregatePitchPositionPaths(pitchPosition, actionModels);
