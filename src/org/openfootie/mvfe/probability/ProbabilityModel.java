@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openfootie.mvfe.agent.action.DribbleAction;
+import org.openfootie.mvfe.agent.action.FoulAction;
 import org.openfootie.mvfe.agent.action.KickBallAction;
 import org.openfootie.mvfe.agent.action.LongPassAction;
 import org.openfootie.mvfe.agent.action.PassAction;
@@ -26,6 +27,8 @@ public class ProbabilityModel {
 	public static final PitchPosition FC_PITCH_POSITION = new PitchPosition(LengthCoordinate.F, WidthCoordinate.C);
 	public static final PitchPosition FW_PITCH_POSITION = new PitchPosition(LengthCoordinate.F, WidthCoordinate.W);
 	public static final PitchPosition FT_PITCH_POSITION = new PitchPosition(LengthCoordinate.F, WidthCoordinate.T);
+	public static final PitchPosition PC_PITCH_POSITION = new PitchPosition(LengthCoordinate.P, WidthCoordinate.C);
+	public static final PitchPosition PW_PITCH_POSITION = new PitchPosition(LengthCoordinate.P, WidthCoordinate.W);
 	
 	public static void init() {
 		
@@ -215,6 +218,98 @@ public class ProbabilityModel {
 			}
 			
 			aggregatePitchPositionPaths(DC_PITCH_POSITION, actionModels);
+		}
+		
+		// DW action models
+		{
+			// Initialize parameters
+			final int AM_CARDINALITY = 11;
+			PitchPosition pitchPosition = DW_PITCH_POSITION;
+			
+			ActionModel [] actionModels = new ActionModel[AM_CARDINALITY];
+			
+			// Define action models
+			
+			actionModels[0] = new ActionModel(new PassAction(GK_PITCH_POSITION), 0.23);
+			{
+				actionModels[0].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[1] = new ActionModel(new PassAction(DC_PITCH_POSITION), 0.14);
+			{
+				actionModels[1].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[2] = new ActionModel(new PassAction(DW_PITCH_POSITION), 0.35);
+			{
+				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 0.12);
+				interception.setCause(OutcomeCause.BLOCK);
+				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(DT_PITCH_POSITION, 1.0, false));
+				
+				actionModels[2].addOutcome(new OutcomeModel(Outcome.SUCCESS, 0.88));
+				actionModels[2].addOutcome(interception);
+			}
+			
+			actionModels[3] = new ActionModel(new PassAction(MC_PITCH_POSITION), 0.06);
+			{
+				OutcomeModel fail = new OutcomeModel(Outcome.FAIL, 0.33);
+				fail.setCause(OutcomeCause.CONTROL);
+				fail.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(PC_PITCH_POSITION, 1.0, true));
+				
+				actionModels[3].addOutcome(new OutcomeModel(Outcome.SUCCESS, 0.67));
+				actionModels[3].addOutcome(fail);
+			}
+			
+			actionModels[4] = new ActionModel(new PassAction(MW_PITCH_POSITION), 0.08);
+			{
+				OutcomeModel success = new OutcomeModel(Outcome.SUCCESS, 0.75);
+				
+				OutcomeModel fail = new OutcomeModel(Outcome.FAIL, 0.25);
+				fail.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(MT_PITCH_POSITION, 1.0, true));
+				
+				actionModels[4].addOutcome(success);
+				actionModels[4].addOutcome(fail);
+			}
+			
+			actionModels[5] = new ActionModel(new LongPassAction(GK_PITCH_POSITION), 0.02);
+			{
+				actionModels[5].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[6] = new ActionModel(new LongPassAction(MC_PITCH_POSITION), 0.02);
+			{
+				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 1.0);
+				interception.setCause(OutcomeCause.HEADER);
+				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(MC_PITCH_POSITION, 1.0, true));
+				
+				actionModels[6].addOutcome(interception);
+			}
+			
+			actionModels[7] = new ActionModel(new LongPassAction(MW_PITCH_POSITION), 0.02);
+			{
+				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 1.0);
+				interception.setCause(OutcomeCause.HEADER);
+				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(MC_PITCH_POSITION, 1.0, false));
+				
+				actionModels[7].addOutcome(interception);
+			}
+			
+			actionModels[8] = new ActionModel(new LongPassAction(FC_PITCH_POSITION), 0.02);
+			{
+				OutcomeModel interception = new OutcomeModel(Outcome.INTERCEPTION, 1.0);
+				interception.setCause(OutcomeCause.HEADER);
+				interception.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(MC_PITCH_POSITION, 1.0, true));
+			}
+			
+			actionModels[9] = new ActionModel(new DribbleAction(), 0.02);
+			{
+				actionModels[9].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[10] = new ActionModel(new FoulAction(), 0.04);
+					
+			// Add pitch position paths to probability model tree
+			aggregatePitchPositionPaths(pitchPosition, actionModels);
 		}
 		
 		// Template for adding pitch position path

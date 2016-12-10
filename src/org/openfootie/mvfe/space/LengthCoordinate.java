@@ -1,5 +1,5 @@
 package org.openfootie.mvfe.space;
 
 public enum LengthCoordinate {
-	Gk,D,M,F
+	Gk,D,M,F,P
 }
