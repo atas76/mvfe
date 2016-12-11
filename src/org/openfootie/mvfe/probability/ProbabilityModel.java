@@ -15,7 +15,8 @@ import org.openfootie.mvfe.space.WidthCoordinate;
 
 public class ProbabilityModel {
 
-	private static Map<PitchPosition, ProbabilityModelPath> root = new HashMap<PitchPosition, ProbabilityModelPath>();
+	private static Map<PitchPosition, ProbabilityModelPath> normalFlow = new HashMap<PitchPosition, ProbabilityModelPath>();
+	private static Map<PitchPosition, ProbabilityModelPath> freeKick = new HashMap<PitchPosition, ProbabilityModelPath>();
 	
 	public static final PitchPosition GK_PITCH_POSITION = new PitchPosition(LengthCoordinate.Gk, null);
 	public static final PitchPosition DC_PITCH_POSITION = new PitchPosition(LengthCoordinate.D, WidthCoordinate.C);
@@ -344,6 +345,43 @@ public class ProbabilityModel {
 			aggregatePitchPositionPaths(pitchPosition, actionModels);
 		}
 		
+		// Free kicks @ DW
+		{
+			// Initialize parameters
+			final int AM_CARDINALITY = 4;
+			PitchPosition pitchPosition = DW_PITCH_POSITION;
+					
+			ActionModel [] actionModels = new ActionModel[AM_CARDINALITY];
+					
+			// Define action models (the actual work)
+			
+			actionModels[0] = new ActionModel(new PassAction(GK_PITCH_POSITION), 0.25);
+			{
+				actionModels[0].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[1] = new ActionModel(new PassAction(DC_PITCH_POSITION), 0.25);
+			{
+				actionModels[1].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[2] = new ActionModel(new PassAction(MW_PITCH_POSITION), 0.25);
+			{
+				actionModels[2].addOutcome(new OutcomeModel(Outcome.SUCCESS, 1.0));
+			}
+			
+			actionModels[3] = new ActionModel(new LongPassAction(MC_PITCH_POSITION), 0.25);
+			{
+				OutcomeModel header = new OutcomeModel(Outcome.HEADER, 1.0);
+				header.addPitchPositionOutcomeModel(new PitchPositionOutcomeModel(DC_PITCH_POSITION, 1.0, false));
+				
+				actionModels[3].addOutcome(header);
+			}
+					
+			// Add pitch position paths to probability model tree
+			aggregatePitchPositionPaths(freeKick, pitchPosition, actionModels);
+		}
+		
 		// Template for adding pitch position path
 		{
 			// TODO: Initialize parameters
@@ -358,8 +396,12 @@ public class ProbabilityModel {
 			aggregatePitchPositionPaths(pitchPosition, actionModels);
 		}
 	}
-
+	
 	private static void aggregatePitchPositionPaths(PitchPosition pos, ActionModel[] actionModels) {
+		aggregatePitchPositionPaths(null, pos, actionModels);
+	}
+	
+	private static void aggregatePitchPositionPaths(Map<PitchPosition, ProbabilityModelPath> root, PitchPosition pos, ActionModel[] actionModels) {
 		
 		// Position should be not null for this utility method. Check added to avoid potential errors while debugging; no need for reporting 
 		if (pos == null) {
@@ -371,10 +413,11 @@ public class ProbabilityModel {
 			ProbabilityModelPath path = new ProbabilityModelPath(pos);
 			path.addActionModel(actionModels[i]);
 			
-			addPath(path);
+			if (root == null) {
+				normalFlow.put(path.getPitchPosition(), path);
+			} else {
+				root.put(path.getPitchPosition(), path);
+			}
 		}
-	}
-	private static void addPath(ProbabilityModelPath path) {
-		root.put(path.getPitchPosition(), path);
 	}
 }
